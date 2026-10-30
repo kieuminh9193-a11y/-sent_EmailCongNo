@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DebtMail Pro - Mail Merge</title>
+  <link rel="stylesheet" href="/static/style.css?v=1.1.4">
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <div>
+        <div class="logo">📧 DebtMail Pro <span style="font-size:11px;font-weight:normal;background:rgba(26,115,232,0.1);color:var(--accent);padding:2px 6px;border-radius:4px;vertical-align:middle;margin-left:6px">v1.1.4</span></div>
+        <div class="subtitle">Công cụ gửi email đòi công nợ - Mail Merge</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span id="outlookStatusText" style="font-size:12px;color:var(--text-muted);margin-right:4px">Outlook: Checking...</span>
+      <span id="outlookStatus" class="status-dot"></span>
+      <button class="btn btn-ghost btn-sm" onclick="App.openModal('settingsModal')">⚙️ Cài đặt</button>
+      <button class="btn btn-ghost btn-sm" onclick="App.downloadTemplate()">📥 Tải Excel mẫu</button>
+      <button class="btn btn-ghost btn-sm" onclick="App.openModal('aboutModal')">📖 Hướng dẫn & Thông tin</button>
+    </div>
+  </header>
+
+  <!-- MAIN 3-PANEL LAYOUT -->
+  <div class="main-container">
+    <!-- LEFT: Customer List -->
+    <div class="panel-left">
+      <div class="panel-header">
+        <div class="panel-title">
+          👥 Danh sách <span id="customerCount" style="color:var(--accent);font-size:12px">0 KH</span>
+          <button class="btn btn-ghost btn-sm" onclick="App.clearData()" style="margin-left:auto;border:none;padding:2px 8px;color:var(--danger)" title="Xóa toàn bộ danh sách hiện tại">🗑️ Xóa</button>
+        </div>
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Tìm khách hàng...">
+        </div>
+      </div>
+      <div class="upload-area" style="flex-direction:column; align-items:stretch">
+        <button class="btn btn-primary btn-sm" onclick="document.getElementById('fileInput').click()">📂 Upload Excel Template</button>
+        <button class="btn btn-ghost btn-sm" style="margin-top:4px" onclick="document.getElementById('fileInputB8').click()">📂 Chuyển B8 (.xlsx) → Template</button>
+        <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none">
+        <input type="file" id="fileInputB8" accept=".xlsx,.xls" style="display:none">
+      </div>
+      <div class="customer-list" id="customerList">
+        <div class="email-empty" style="padding:40px 0">
+          <span class="icon">📋</span>
+          <p>Upload file Excel để bắt đầu</p>
+        </div>
+      </div>
+      <div class="panel-footer">
+        <div class="select-actions">
+          <button class="btn btn-ghost btn-sm" onclick="App.selectAll()">☑ Chọn tất cả</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.deselectAll()">☐ Bỏ chọn</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CENTER: Email Preview -->
+    <div class="panel-center">
+      <div class="email-toolbar">
+        <div class="email-field">
+          <label>From:</label>
+          <select id="fieldFrom" style="flex:1;background:transparent;border:none;color:var(--text-primary);font-size:13px;outline:none;padding:4px 0;font-family:'Inter',sans-serif;cursor:pointer">
+            <option value="">-- Chọn tài khoản Outlook --</option>
+          </select>
+        </div>
+        <div class="email-field">
+          <label>To:</label>
+          <input type="text" id="fieldTo" placeholder="recipient@company.com">
+        </div>
+        <div class="email-field">
+          <label>CC:</label>
+          <input type="text" id="fieldCc" placeholder="cc@company.com">
+        </div>
+        <div class="email-field">
+          <label>BCC:</label>
+          <input type="text" id="fieldBcc" placeholder="bcc@company.com (ẩn danh)">
+        </div>
+        <div class="email-field">
+          <label>Subject:</label>
+          <input type="text" id="fieldSubject" placeholder="Tiêu đề email">
+        </div>
+      </div>
+      <div class="edit-toolbar" id="editToolbar">
+        <span class="edit-hint">✏️ Nội dung email có thể chỉnh sửa trực tiếp bên dưới (chỉ áp dụng cho email này)</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="btn-refresh" onclick="App.toggleEditGuide()" title="Hướng dẫn chỉnh sửa">❓ Hướng dẫn</button>
+          <button class="btn-refresh" onclick="App.generatePreview()">🔄 Khôi phục mẫu</button>
+        </div>
+      </div>
+      <div class="edit-guide" id="editGuide" style="display:none;background:linear-gradient(135deg,#e3f2fd,#f3e5f5);border:1px solid #bbdefb;border-radius:8px;padding:12px 16px;margin:0 12px 8px;font-size:11px;line-height:1.7;color:#333;">
+        <div style="font-weight:700;font-size:12px;margin-bottom:6px;color:#1565c0;">📖 Hai cách chỉnh sửa nội dung email:</div>
+        <div style="margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.7);border-radius:6px;">
+          <b style="color:#2e7d32;">① Chỉnh mẫu gốc (áp dụng cho TẤT CẢ khách hàng):</b><br>
+          Vào <b>⚙️ Cài đặt</b> → mục <b>"📄 Mẫu nội dung email"</b> → chỉnh sửa HTML template.<br>
+          Dùng các biến <code>{customer_name}</code> <code>{company_name}</code> <code>{debt_date}</code> <code>{payment_deadline}</code> <code>{debt_table}</code> <code>{signature}</code> để tự động chèn dữ liệu.<br>
+          <span style="color:#e65100;">⚠️ Template dùng HTML. Mỗi đoạn văn bọc trong <code>&lt;p&gt;...&lt;/p&gt;</code>, in đậm dùng <code>&lt;b&gt;</code>, xuống dòng dùng <code>&lt;br&gt;</code>.</span>
+        </div>
+        <div style="padding:8px;background:rgba(255,255,255,0.7);border-radius:6px;">
+          <b style="color:#1565c0;">② Chỉnh trực tiếp trên preview (chỉ áp dụng cho email ĐANG XEM):</b><br>
+          Bấm vào vùng preview bên dưới → gõ, xóa, sửa nội dung trực tiếp như soạn văn bản.<br>
+          <span style="color:#e65100;">⚠️ Thay đổi này CHỈ áp dụng cho email hiện tại. Khi chuyển KH khác hoặc bấm 🔄 Khôi phục, nội dung sẽ reset về mẫu gốc.</span>
+        </div>
+      </div>
+      <div class="email-preview-container">
+        <div id="emailEmpty" class="email-empty">
+          <span class="icon">✉️</span>
+          <p>Chọn một khách hàng từ danh sách bên trái để xem trước email</p>
+        </div>
+        <div class="email-preview-frame" id="emailPreviewContent" contenteditable="true" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Actions -->
+    <div class="panel-right">
+      <div class="action-section">
+        <h3>📤 Gửi Email</h3>
+        <div class="action-buttons">
+          <button class="btn btn-primary" onclick="App.sendCurrentEmail()">📧 Gửi email hiện tại</button>
+          <button class="btn btn-success" id="btnSendBatch" onclick="App.sendBatch()">📨 Gửi tất cả đã chọn (0)</button>
+        </div>
+      </div>
+
+      <div class="action-section">
+        <h3>⚙️ Chế độ gửi</h3>
+        <div class="radio-group">
+          <div class="radio-option">
+            <input type="radio" name="sendMode" id="modeDisplay" value="display" checked>
+            <label for="modeDisplay">🔍 Hiển thị trên Outlook trước</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" name="sendMode" id="modeSend" value="send">
+            <label for="modeSend">⚡ Gửi trực tiếp</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-section">
+        <h3>📎 File đính kèm</h3>
+        <div style="display:flex; gap:8px; margin-bottom:8px">
+          <button class="btn btn-ghost btn-sm" onclick="App.addAttachment(false)" style="flex:1; padding:4px 0" title="Chỉ đính kèm cho KH đang chọn">+ File KH này</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.addAttachment(true)" style="flex:1; padding:4px 0" title="Đính kèm cho tất cả KH">+ File chung</button>
+        </div>
+        <div class="form-group" style="margin-top:10px; margin-bottom:10px;">
+          <label style="font-size:11px;font-weight:600;display:block;margin-bottom:4px;color:var(--text-secondary)">📁 Thư mục file riêng KH (Auto-match theo mã):</label>
+          <input type="text" id="kh_attachments_dir" placeholder="VD: D:\CongNo\Files" style="width:100%;font-size:11px;padding:6px 8px;border:1px solid var(--border);border-radius:4px;outline:none;">
+        </div>
+        <div class="attachment-list" id="attachmentList">
+          <span style="font-size:12px;color:var(--text-muted)">Chưa có file đính kèm</span>
+        </div>
+      </div>
+
+      <div class="action-section">
+        <h3>📊 Lịch sử nhắc nợ</h3>
+        <div id="sendLogSummary" style="font-size:12px;color:var(--text-muted)">
+          Chọn KH để xem lịch sử
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal" style="width:920px">
+      <div class="modal-header">
+        <h2>⚙️ Cài đặt Mail Merge</h2>
+        <button class="btn btn-ghost btn-sm" onclick="App.closeModal('settingsModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- Outlook Connection -->
+        <h3 style="font-size:14px;margin-bottom:8px;color:var(--accent)">🔗 Kết nối Outlook</h3>
+        <div style="font-size:11px;color:var(--text-muted);background:#f8f9fa;padding:10px;border-radius:8px;margin-bottom:16px;line-height:1.6;">
+          <b>Yêu cầu:</b> Outlook Desktop phải được <b>cài đặt</b> và <b>đang mở</b> trên máy.<br>
+          <b>Cách hoạt động:</b> Tool kết nối qua COM Automation (pywin32) — không cần cấu hình thêm.<br>
+          <b>Khi di chuyển máy:</b> Chỉ cần Outlook Desktop đã đăng nhập tài khoản email tương ứng.<br>
+          <b>Tài khoản gửi:</b> Nhập đúng email đã cấu hình trong Outlook ở ô bên dưới.
+        </div>
+
+        <!-- Sender -->
+        <h3 style="font-size:14px;margin-bottom:12px;color:var(--accent)">📧 Email gửi</h3>
+        <div class="form-group">
+          <label>Tài khoản / Alias gửi (chọn email chính hoặc alias nếu có)</label>
+          <select id="set_sender_email" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:'Inter',sans-serif">
+            <option value="">-- Chọn tài khoản --</option>
+          </select>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:6px;line-height:1.5;padding:6px 8px;background:#f0f4ff;border-radius:6px;border:1px solid #e0e7ff;margin-bottom:8px;">
+            💡 <b>Alias:</b> Nếu tài khoản Outlook (Exchange/Office 365) có nhiều địa chỉ email (alias), tool sẽ tự động phát hiện và hiển thị với nhãn <b>[Alias]</b>. Khi chọn alias, email sẽ gửi từ alias đó thay vì email chính.
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Danh sách Alias bổ sung (nhập thủ công, mỗi email trên một dòng)</label>
+          <textarea id="set_manual_aliases" rows="2" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:monospace;resize:vertical;" placeholder="Ví dụ:&#10;alias1@company.com&#10;alias2@company.com"></textarea>
+        </div>
+
+        <!-- Local Attachments Folder -->
+        <h3 style="font-size:14px;margin:20px 0 12px;color:var(--accent)">📁 Thư mục tệp đính kèm tự động</h3>
+        <div class="form-group">
+          <label>Đường dẫn thư mục chứa hóa đơn/file riêng của khách hàng</label>
+          <input id="set_kh_attachments_dir" placeholder="Ví dụ: D:\CongNo\HoaDon" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:'Inter',sans-serif">
+          <div style="font-size:10px;color:var(--text-muted);margin-top:4px;">
+            Hệ thống sẽ quét thư mục này và tự động đính kèm bất kỳ file nào có chứa <b>Mã khách hàng</b> trong tên file.
+          </div>
+        </div>
+
+        <!-- Subject Format -->
+        <h3 style="font-size:14px;margin:20px 0 12px;color:var(--accent)">📝 Tiêu đề email</h3>
+        <div class="form-group">
+          <label>Format tiêu đề (biến: {short_name}, {debt_date}, {debt_date_dot})</label>
+          <input id="set_subject_format">
+        </div>
+
+        <!-- Email Template -->
+        <h3 style="font-size:14px;margin:20px 0 8px;color:var(--accent)">📄 Mẫu nội dung email (Mail Merge)</h3>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;line-height:1.7;background:linear-gradient(135deg,#e8f5e9,#e3f2fd);padding:12px;border-radius:8px;border:1px solid #c8e6c9;">
+          <div style="font-weight:700;color:#2e7d32;margin-bottom:6px;">📌 Hướng dẫn chỉnh sửa mẫu email:</div>
+          <div style="margin-bottom:4px;">Nội dung dưới đây là <b>HTML template</b> — khi gửi, các biến <code>{...}</code> sẽ được thay thế bằng dữ liệu thực của từng khách hàng.</div>
+          <div style="margin-bottom:4px;"><b>Các biến có sẵn:</b></div>
+          <table style="width:100%;font-size:10px;border-collapse:collapse;margin-bottom:6px;">
+            <tr style="background:rgba(255,255,255,0.6);">
+              <td style="padding:3px 6px;border:1px solid #ddd;"><code>{customer_name}</code></td>
+              <td style="padding:3px 6px;border:1px solid #ddd;">Tên khách hàng (sau "Kính gửi:")</td>
+            </tr>
+            <tr>
+              <td style="padding:3px 6px;border:1px solid #ddd;"><code>{company_name}</code></td>
+              <td style="padding:3px 6px;border:1px solid #ddd;">Tên công ty của bạn</td>
+            </tr>
+            <tr style="background:rgba(255,255,255,0.6);">
+              <td style="padding:3px 6px;border:1px solid #ddd;"><code>{debt_date}</code></td>
+              <td style="padding:3px 6px;border:1px solid #ddd;">Ngày tính công nợ</td>
+            </tr>
+            <tr>
+              <td style="padding:3px 6px;border:1px solid #ddd;"><code>{payment_deadline}</code></td>
+              <td style="padding:3px 6px;border:1px solid #ddd;">Hạn thanh toán yêu cầu</td>
+            </tr>
+            <tr style="background:rgba(255,255,255,0.6);">
+              <td style="padding:3px 6px;border:1px solid #ddd;"><code>{debt_table}</code></td>
+              <td style="padding:3px 6px;border:1px solid #ddd;">Bảng công nợ chi tiết (tự động tạo từ sheet CongNo)</td>
+            </tr>
+            <tr>
+              <td style="padding:3px 6px;border:1px solid #ddd;"><code>{signature}</code></td>
+              <td style="padding:3px 6px;border:1px solid #ddd;">Chữ ký email (cấu hình bên dưới)</td>
+            </tr>
+            <tr style="background:rgba(255,255,255,0.6);">
+              <td style="padding:3px 6px;border:1px solid #ddd;"><code>{short_name}</code></td>
+              <td style="padding:3px 6px;border:1px solid #ddd;">Tên viết tắt KH</td>
+            </tr>
+          </table>
+          <div style="color:#e65100;">⚠️ <b>Lưu ý:</b> Template dùng HTML. Mỗi đoạn văn bọc trong <code>&lt;p&gt;...&lt;/p&gt;</code>. In đậm: <code>&lt;b&gt;nội dung&lt;/b&gt;</code>. Xuống dòng: <code>&lt;br&gt;</code>. Dòng trống: <code>&lt;p&gt;&amp;nbsp;&lt;/p&gt;</code></div>
+        </div>
+        <div class="form-group">
+          <textarea id="set_email_template" rows="14" style="font-family:monospace;font-size:12px;line-height:1.5"></textarea>
+        </div>
+
+        <!-- Signature -->
+        <h3 style="font-size:14px;margin:20px 0 8px;color:var(--accent)">✍️ Chữ ký email (HTML)</h3>
+        <div class="form-group">
+          <textarea id="set_signature" rows="6" style="font-family:monospace;font-size:12px;line-height:1.5" placeholder="Nhập chữ ký email (hỗ trợ HTML)..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="App.closeModal('settingsModal')">Hủy</button>
+        <button class="btn btn-primary" onclick="App.saveSettings()">💾 Lưu cài đặt</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABOUT MODAL -->
+  <div class="modal-overlay" id="aboutModal">
+    <div class="modal" style="width:780px">
+      <div class="modal-header">
+        <h2>📖 Hướng dẫn & Thông tin DebtMail Pro</h2>
+        <button class="btn btn-ghost btn-sm" onclick="App.closeModal('aboutModal')">✕</button>
+      </div>
+      <div class="modal-body" style="line-height:1.7">
+        <div style="text-align:center;margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:20px;border-bottom:1px solid var(--border);padding-bottom:16px;">
+          <div>
+            <div style="font-size:22px;font-weight:700;background:linear-gradient(135deg,#1a73e8,#1557b0);-webkit-background-clip:text;-webkit-text-fill-color:transparent">📧 DebtMail Pro</div>
+            <div style="font-size:12px;color:var(--text-muted)">Phiên bản 1.1.4 | DebtMail Pro</div>
+          </div>
+          <div id="licenseInfo" style="padding:6px 12px;background:#e8f5e9;border-radius:8px;font-size:11px;color:#2e7d32;display:inline-block">
+            Đang kiểm tra license...
+          </div>
+        </div>
+
+        <div class="tab-container">
+          <div class="tab-header">
+            <button class="tab-btn active" onclick="App.switchTab('paneGeneral', this)">📋 Hướng dẫn chung</button>
+            <button class="tab-btn" onclick="App.switchTab('paneAttachments', this)">📎 Đính kèm hàng loạt</button>
+            <button class="tab-btn" onclick="App.switchTab('paneOutlook', this)">🔗 Kết nối Outlook</button>
+            <button class="tab-btn" onclick="App.switchTab('paneMergeTags', this)">📝 Các biến mẫu</button>
+          </div>
+
+          <!-- TAB 1: General Guide -->
+          <div class="tab-pane active" id="paneGeneral">
+            <h4>📋 Hướng dẫn sử dụng cơ bản</h4>
+            <div style="font-size:12.5px;color:var(--text-secondary);">
+              <p><b>Bước 1:</b> Mở ứng dụng <b>Outlook Desktop</b> trên máy tính và đăng nhập tài khoản email của bạn.</p>
+              <p><b>Bước 2:</b> Vào mục <b>⚙️ Cài đặt</b> trên phần mềm -> Chọn đúng tài khoản hoặc alias gửi email trong mục <b>"Email gửi"</b>.</p>
+              <p><b>Bước 3:</b> Tải tệp Excel mẫu bằng cách nhấn nút <b>Tải Excel mẫu</b> ở đầu trang. Tiến hành điền dữ liệu công nợ khách hàng.</p>
+              <p style="margin-left:16px;color:var(--text-muted)">— Hoặc nạp file B8 xuất từ phần mềm Bravo bằng nút <b>Chuyển B8 → Template</b> để tự động convert sang định dạng chuẩn.</p>
+              <p><b>Bước 4:</b> Nhấn <b>Upload Excel Template</b> để nạp tệp dữ liệu vào ứng dụng.</p>
+              <p><b>Bước 5:</b> Chọn khách hàng ở danh sách bên trái -> Xem trước nội dung email -> Nhấn <b>Gửi email hiện tại</b> để gửi đơn lẻ.</p>
+              <p><b>Bước 6:</b> Để gửi hàng loạt: Tích chọn các khách hàng -> Chọn chế độ gửi (Hiện Outlook hoặc Gửi trực tiếp) -> Nhấn <b>Gửi tất cả đã chọn</b>.</p>
+            </div>
+          </div>
+
+          <!-- TAB 2: Batch Attachments -->
+          <div class="tab-pane" id="paneAttachments">
+            <h4>📎 Hai phương án đính kèm file riêng hàng loạt</h4>
+            <p>Ứng dụng hỗ trợ tự động đính kèm hóa đơn/biên bản công nợ riêng biệt cho từng khách hàng khi gửi hàng loạt:</p>
+            
+            <div style="background:#f8f9fa;padding:12px;border-radius:8px;border:1.5px solid var(--success);margin-bottom:12px;">
+              <strong style="color:var(--success);font-size:13px;">Cách 1: Khớp file tự động theo Mã KH (Khuyên dùng)</strong>
+              <p style="font-size:12px;margin:6px 0 0;color:var(--text-secondary)">
+                1. Đặt tất cả file cần đính kèm của mọi khách hàng vào <b>chung một thư mục</b> trên máy tính.<br>
+                2. Đặt tên file chứa <b>Mã khách hàng</b> tương ứng (Ví dụ: file có tên chứa <code>KH001</code> sẽ tự động khớp với khách hàng có mã <code>KH001</code>).<br>
+                3. Nhập đường dẫn thư mục đó vào ô <b>📁 Thư mục file riêng KH</b> ở thanh công cụ bên phải. Hệ thống sẽ tự quét, khớp file và hiển thị bằng thẻ màu xanh lá cây.
+              </p>
+            </div>
+
+            <div style="background:#f8f9fa;padding:12px;border-radius:8px;border:1.5px solid var(--accent);">
+              <strong style="color:var(--accent);font-size:13px;">Cách 2: Cấu hình trực tiếp trong tệp nhập liệu Excel</strong>
+              <p style="font-size:12px;margin:6px 0 0;color:var(--text-secondary)">
+                1. Mở tệp nhập liệu Excel, di chuyển tới sheet <b>DanhSach</b>.<br>
+                2. Điền đường dẫn thư mục chứa file vào cột <code>attachment_dir</code> (Ví dụ: <code>D:\CongNo\PDF</code>).<br>
+                3. Điền tên file tương ứng vào cột <code>attachment_file</code> (Ví dụ: <code>HD_KH001.pdf</code>).<br>
+                4. Nạp tệp Excel này vào phần mềm. Ứng dụng sẽ tự động tải file đính kèm theo cấu hình Excel cho từng khách hàng.
+              </p>
+            </div>
+          </div>
+
+          <!-- TAB 3: Outlook Connection -->
+          <div class="tab-pane" id="paneOutlook">
+            <h4>🔗 Cấu hình kết nối Outlook</h4>
+            <div style="font-size:12.5px;color:var(--text-secondary)">
+              <p>✅ <b>Nguyên lý hoạt động:</b> Ứng dụng sử dụng công nghệ <b>COM Automation (pywin32)</b> để trực tiếp điều khiển ứng dụng Outlook trên máy tính của bạn. Do đó, bạn <b>không cần điền mật khẩu email</b> vào phần mềm, đảm bảo an toàn bảo mật tuyệt đối.</p>
+              <p>⚠️ <b>Yêu cầu bắt buộc:</b> Bạn phải cài đặt phần mềm <b>Outlook Desktop</b> trên máy tính và ứng dụng Outlook đang được mở.</p>
+              <p>💡 <b>Hỗ trợ Email Alias:</b> Nếu bạn đăng nhập tài khoản Exchange/Office 365 có nhiều địa chỉ gửi (email phụ/alias), phần mềm sẽ tự động nhận diện các alias này và hiển thị dạng <code>↳ alias@company.com [Alias]</code> trong ô chọn tài khoản gửi. Khi bạn chọn gửi từ alias, Outlook sẽ tự động gửi dưới tên alias đó.</p>
+            </div>
+          </div>
+
+          <!-- TAB 4: Merge Tags -->
+          <div class="tab-pane" id="paneMergeTags">
+            <h4>📝 Các biến trộn thông tin (Merge Tags)</h4>
+            <p>Sử dụng các biến dưới đây đặt trong tệp <b>Mẫu nội dung email (HTML)</b> hoặc <b>Tiêu đề email</b> để trộn dữ liệu tự động cho từng khách hàng:</p>
+            <table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:8px;">
+              <thead>
+                <tr style="background:#f1f3f4;border-bottom:2px solid #ddd;text-align:left;">
+                  <th style="padding:6px;border:1px solid #ddd;">Biến trộn</th>
+                  <th style="padding:6px;border:1px solid #ddd;">Thông tin sẽ hiển thị</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding:6px;border:1px solid #ddd;"><code>{customer_name}</code></td>
+                  <td style="padding:6px;border:1px solid #ddd;">Tên khách hàng hiển thị sau dòng kính gửi.</td>
+                </tr>
+                <tr style="background:#f8f9fa;">
+                  <td style="padding:6px;border:1px solid #ddd;"><code>{customer_code}</code></td>
+                  <td style="padding:6px;border:1px solid #ddd;">Mã khách hàng tương ứng của từng khách hàng.</td>
+                </tr>
+                <tr>
+                  <td style="padding:6px;border:1px solid #ddd;"><code>{company_name}</code></td>
+                  <td style="padding:6px;border:1px solid #ddd;">Tên công ty/Chi nhánh của bạn.</td>
+                </tr>
+                <tr style="background:#f8f9fa;">
+                  <td style="padding:6px;border:1px solid #ddd;"><code>{debt_date}</code></td>
+                  <td style="padding:6px;border:1px solid #ddd;">Ngày chốt công nợ lấy từ tệp Excel.</td>
+                </tr>
+                <tr>
+                  <td style="padding:6px;border:1px solid #ddd;"><code>{payment_deadline}</code></td>
+                  <td style="padding:6px;border:1px solid #ddd;">Hạn thanh toán yêu cầu lấy từ tệp Excel.</td>
+                </tr>
+                <tr style="background:#f8f9fa;">
+                  <td style="padding:6px;border:1px solid #ddd;"><code>{debt_table}</code></td>
+                  <td style="padding:6px;border:1px solid #ddd;">Bảng chi tiết các khoản nợ quá hạn (tự động tạo từ sheet CongNo).</td>
+                </tr>
+                <tr>
+                  <td style="padding:6px;border:1px solid #ddd;"><code>{signature}</code></td>
+                  <td style="padding:6px;border:1px solid #ddd;">Chữ ký email (chỉnh sửa trong phần Cài đặt).</td>
+                </tr>
+                <tr style="background:#f8f9fa;">
+                  <td style="padding:6px;border:1px solid #ddd;"><code>{short_name}</code></td>
+                  <td style="padding:6px;border:1px solid #ddd;">Tên viết tắt của khách hàng dùng cho tiêu đề email.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="App.closeModal('aboutModal')">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="/static/app.js?v=1.1.4"></script>
+</body>
+</html>

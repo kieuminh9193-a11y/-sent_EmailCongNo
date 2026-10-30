@@ -1,0 +1,38 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# User data, logs & license
+.license
+send_log.json
+uploads/
+backups/
+*.msg
+*.log
+inspect_output.txt
+
+# Private/Customer Excel data
+Mau_CongNo*.xlsx
+Template_SenEmail*.xlsx
+
+# PyInstaller / Build outputs & Archives
+build/
+dist/
+*.zip
+*.spec.bak
