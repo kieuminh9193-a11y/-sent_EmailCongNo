@@ -12,7 +12,7 @@
   - Hai chế độ gửi: **Hiển thị nháp trên Outlook (Display)** để kiểm tra trước hoặc **Gửi tự động ngầm (Send)**.
 - 📊 **Quản lý dữ liệu công nợ:**
   - Nhập danh sách công nợ trực tiếp từ Excel (`.xlsx`).
-  - Hỗ trợ chuyển đổi tự động từ định dạng xuất công nợ (Bravo 8 / ERP) sang template chuẩn.
+  - Hỗ trợ chuyển đổi tự động từ định dạng xuất công nợ hệ thống ERP sang template chuẩn.
   - Bảng tổng hợp công nợ tự động tính tổng tiền phải thu, đã thu và còn lại phải thu.
 - 📎 **Đính kèm tài liệu hàng loạt thông minh:**
   - **Auto-match theo Mã KH:** Tự động quét thư mục hóa đơn và ghép đúng các file PDF/Excel có chứa mã khách hàng vào từng email.
@@ -32,7 +32,7 @@
 ├── app.py                      # Flask backend & API điều khiển
 ├── outlook_sender.py           # Module kết nối và gửi mail qua Outlook COM
 ├── email_template.py           # Module Mail Merge & tạo bảng HTML công nợ
-├── convert_to_template.py      # Tiện ích chuyển đổi dữ liệu Bravo 8 / Excel gốc
+├── convert_to_template.py      # Tiện ích chuyển đổi dữ liệu ERP / Excel gốc
 ├── license_check.py            # Kiểm tra thời hạn & kích hoạt ứng dụng
 ├── DebtMailPro.spec            # Cấu hình đóng gói PyInstaller (.exe)
 ├── requirements.txt            # Danh sách thư viện Python phụ thuộc
@@ -77,7 +77,7 @@ Sau khi khởi động, trình duyệt sẽ tự động mở giao diện tại 
      - `CongNo`: Chi tiết từng hóa đơn quá hạn (tên khách hàng phải khớp chính xác với sheet `DanhSach`).
 2. **Nạp dữ liệu vào ứng dụng:**
    - Nhấn **Tải file Excel lên** và chọn file dữ liệu của bạn.
-   - Hoặc nếu dùng file báo cáo xuất từ Bravo 8, sử dụng chức năng **Chuyển đổi Bravo 8**.
+   - Hoặc nếu dùng file báo cáo xuất từ hệ thống ERP, sử dụng chức năng **Chuyển đổi ERP**.
 3. **Cài đặt email & chữ ký:**
    - Vào mục **Cài đặt** để cấu hình tên công ty, tiêu đề mặc định và chữ ký email.
 4. **Đính kèm file (Tùy chọn):**

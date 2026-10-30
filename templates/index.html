@@ -40,9 +40,9 @@
       </div>
       <div class="upload-area" style="flex-direction:column; align-items:stretch">
         <button class="btn btn-primary btn-sm" onclick="document.getElementById('fileInput').click()">📂 Upload Excel Template</button>
-        <button class="btn btn-ghost btn-sm" style="margin-top:4px" onclick="document.getElementById('fileInputB8').click()">📂 Chuyển B8 (.xlsx) → Template</button>
+        <button class="btn btn-ghost btn-sm" style="margin-top:4px" onclick="document.getElementById('fileInputErp').click()">📂 Chuyển ERP (.xlsx) → Template</button>
         <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none">
-        <input type="file" id="fileInputB8" accept=".xlsx,.xls" style="display:none">
+        <input type="file" id="fileInputErp" accept=".xlsx,.xls" style="display:none">
       </div>
       <div class="customer-list" id="customerList">
         <div class="email-empty" style="padding:40px 0">
@@ -301,7 +301,7 @@
               <p><b>Bước 1:</b> Mở ứng dụng <b>Outlook Desktop</b> trên máy tính và đăng nhập tài khoản email của bạn.</p>
               <p><b>Bước 2:</b> Vào mục <b>⚙️ Cài đặt</b> trên phần mềm -> Chọn đúng tài khoản hoặc alias gửi email trong mục <b>"Email gửi"</b>.</p>
               <p><b>Bước 3:</b> Tải tệp Excel mẫu bằng cách nhấn nút <b>Tải Excel mẫu</b> ở đầu trang. Tiến hành điền dữ liệu công nợ khách hàng.</p>
-              <p style="margin-left:16px;color:var(--text-muted)">— Hoặc nạp file B8 xuất từ phần mềm Bravo bằng nút <b>Chuyển B8 → Template</b> để tự động convert sang định dạng chuẩn.</p>
+              <p style="margin-left:16px;color:var(--text-muted)">— Hoặc nạp file xuất từ hệ thống ERP bằng nút <b>Chuyển ERP → Template</b> để tự động convert sang định dạng chuẩn.</p>
               <p><b>Bước 4:</b> Nhấn <b>Upload Excel Template</b> để nạp tệp dữ liệu vào ứng dụng.</p>
               <p><b>Bước 5:</b> Chọn khách hàng ở danh sách bên trái -> Xem trước nội dung email -> Nhấn <b>Gửi email hiện tại</b> để gửi đơn lẻ.</p>
               <p><b>Bước 6:</b> Để gửi hàng loạt: Tích chọn các khách hàng -> Chọn chế độ gửi (Hiện Outlook hoặc Gửi trực tiếp) -> Nhấn <b>Gửi tất cả đã chọn</b>.</p>

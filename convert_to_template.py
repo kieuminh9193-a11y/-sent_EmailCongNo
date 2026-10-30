@@ -187,8 +187,8 @@ if __name__ == '__main__':
     import tempfile
     import os
     
-    input_f = sys.argv[1] if len(sys.argv) > 1 else 'Mau_Bravo8.xlsx'
-    output_f = sys.argv[2] if len(sys.argv) > 2 else 'Template_SenEmail.xlsx'
+    input_f = sys.argv[1] if len(sys.argv) > 1 else 'Mau_ERP.xlsx'
+    output_f = sys.argv[2] if len(sys.argv) > 2 else 'Template_Mau.xlsx'
     
     if os.path.exists(input_f):
         temp_file = os.path.join(tempfile.gettempdir(), 'temp_convert_input.xlsx')

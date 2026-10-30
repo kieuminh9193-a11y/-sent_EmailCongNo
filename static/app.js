@@ -336,29 +336,29 @@ const App = {
     }
   },
 
-  async uploadB8(file) {
+  async uploadErp(file) {
     const choice = confirm('Bạn muốn:\n- Bấm OK: Nạp thẳng dữ liệu vào Tool\n- Bấm Cancel: Chỉ xuất file Excel Template để tải về');
     const mode = choice ? 'import' : 'download';
 
-    this.toast(`Đang xử lý file B8 (${mode})...`, 'info');
+    this.toast(`Đang xử lý file ERP (${mode})...`, 'info');
     const formData = new FormData();
     formData.append('file', file);
     formData.append('output_mode', mode);
 
     if (mode === 'download') {
       try {
-        const res = await fetch('/api/upload-b8', { method: 'POST', body: formData });
+        const res = await fetch('/api/upload-erp', { method: 'POST', body: formData });
         if (!res.ok) throw new Error('Server error');
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url; a.download = 'Template_Tu_B8.xlsx';
+        a.href = url; a.download = 'Template_Tu_ERP.xlsx';
         document.body.appendChild(a); a.click();
         document.body.removeChild(a); URL.revokeObjectURL(url);
         this.toast('Đã tải file chuyển đổi xong!', 'success');
       } catch (e) { this.toast('Lỗi tải file: ' + e.message, 'error'); }
     } else {
-      const data = await this.api('/api/upload-b8', { method: 'POST', body: formData });
+      const data = await this.api('/api/upload-erp', { method: 'POST', body: formData });
       if (data?.success) {
         this.toast(data.message, 'success');
         await this.loadCustomers();
@@ -367,8 +367,10 @@ const App = {
       }
     }
     // Reset file input
-    document.getElementById('fileInputB8').value = '';
+    const el = document.getElementById('fileInputErp') || document.getElementById('fileInputB8');
+    if (el) el.value = '';
   },
+  uploadB8(file) { return this.uploadErp(file); },
 
   async clearData() {
     if (!confirm('Bạn có chắc muốn xóa toàn bộ danh sách hiện tại?')) return;
@@ -726,9 +728,12 @@ const App = {
     document.getElementById('fileInput').addEventListener('change', e => {
       if (e.target.files[0]) this.uploadExcel(e.target.files[0]);
     });
-    document.getElementById('fileInputB8').addEventListener('change', e => {
-      if (e.target.files[0]) this.uploadB8(e.target.files[0]);
-    });
+    const erpInput = document.getElementById('fileInputErp') || document.getElementById('fileInputB8');
+    if (erpInput) {
+      erpInput.addEventListener('change', e => {
+        if (e.target.files[0]) this.uploadErp(e.target.files[0]);
+      });
+    }
     document.getElementById('kh_attachments_dir').addEventListener('change', async e => {
       this.settings.kh_attachments_dir = e.target.value;
       await this.api('/api/settings', {

@@ -5,7 +5,7 @@ Tài liệu này hướng dẫn cách sử dụng công cụ **DebtMail Pro** đ
 ---
 
 ## 📋 BƯỚC 1: CHUẨN BỊ MẪU NHẬP LIỆU EXCEL
-Khi bạn tải Excel mẫu từ ứng dụng hoặc chuyển đổi từ file Bravo 8, sheet **DanhSach** sẽ có các cột quan trọng sau:
+Khi bạn tải Excel mẫu từ ứng dụng hoặc chuyển đổi từ file ERP, sheet **DanhSach** sẽ có các cột quan trọng sau:
 
 1. **customer_name**: Tên khách hàng (Ví dụ: `CÔNG TY CP ABC`).
 2. **customer_code**: Mã khách hàng (Ví dụ: `KH001`).

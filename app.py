@@ -359,8 +359,9 @@ def get_customers():
     except Exception as e:
         return jsonify({'customers': [], 'message': str(e)})
 
+@app.route('/api/upload-erp', methods=['POST'])
 @app.route('/api/upload-b8', methods=['POST'])
-def upload_b8():
+def upload_erp():
     if 'file' not in request.files:
         return jsonify({'success': False, 'message': 'No file found'}), 400
     file = request.files['file']
@@ -369,7 +370,7 @@ def upload_b8():
     if not file.filename.endswith(('.xlsx', '.xls')):
         return jsonify({'success': False, 'message': 'Only .xlsx files accepted'}), 400
         
-    temp_in = os.path.join(UPLOAD_DIR, 'temp_b8_input.xlsx')
+    temp_in = os.path.join(UPLOAD_DIR, 'temp_erp_input.xlsx')
     output_path = os.path.join(UPLOAD_DIR, 'cong_no_data.xlsx')
     
     # If downloading, we shouldn't overwrite the main data file
@@ -378,7 +379,7 @@ def upload_b8():
     
     try:
         file.save(temp_in)
-        # Convert B8 to Template
+        # Convert ERP export to Template
         process_excel(temp_in, output_path)
         
         # Cleanup temp
